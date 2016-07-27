@@ -2,11 +2,10 @@ package box
 
 // MockClient - Used for mocking
 type MockClient struct {
-	_ClientID    string
-	_accessToken string
+	_ClientID string
 }
 
-// SetClientID - SSet the ClientID
+// SetClientID - Set the ClientID
 func (p *MockClient) SetClientID(newKey string) {
 	p._ClientID = newKey
 }

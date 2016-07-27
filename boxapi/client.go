@@ -16,8 +16,7 @@ type API interface {
 
 // Client -
 type Client struct {
-	_ClientID    string
-	_accessToken string
+	_ClientID string
 }
 
 // SetClientID - SSet the ClientID
