@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/daveym/box-reporter/api"
-	"github.com/daveym/lint/pocket"
+	"github.com/daveym/box-reporter/box"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -34,8 +34,8 @@ func init() {
 
 func retrieve(cmd *cobra.Command, args []string) {
 
-	pc := &pocket.Client{}
-	pc.SetConsumerKey(viper.GetString("ConsumerKey"))
+	pc := &box.Client{}
+	pc.SetClientID(viper.GetString("ConsumerKey"))
 	pc.SetAccessToken(viper.GetString("AccessToken"))
 
 	msg := api.Retrieve(pc, searchVal, domainVal, tagVal, countVal)

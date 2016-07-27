@@ -5,104 +5,47 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os/exec"
 )
 
-// API - Base interface type for Pocket API. Allows us to mock/test.
+// API - Base interface type for Box API. Allows us to mock/test.
 type API interface {
-	SetConsumerKey(string)
-	GetConsumerKey() string
-	SetAccessToken(string)
-	GetAccessToken() string
-	Authenticate(string, *AuthenticationResponse) error
-	UserAuthorise(string, string, string) error
-	RetrieveAccessToken(string, string, *AuthorisationResponse) error
-	Retrieve(RetrieveRequest, *RetrieveResponse) error
-	Modify(ModifyRequest, *ModifyResponse) error
+	SetClientID(string)
+	GetClientID() string
+	Authorise(string, string, string) error
 }
 
-// Client - Provide access the Pocket API
+// Client -
 type Client struct {
-	_consumerKey string
+	_ClientID    string
 	_accessToken string
 }
 
-// SetConsumerKey - Set the new consumer Key
-func (p *Client) SetConsumerKey(newKey string) {
-	p._consumerKey = newKey
+// SetClientID - Set the new consumer Key
+func (p *Client) SetClientID(newKey string) {
+	p._ClientID = newKey
 }
 
-// GetConsumerKey - Set the new consumer Key
-func (p *Client) GetConsumerKey() string {
-	return p._consumerKey
+// GetClientID - Set the new consumer Key
+func (p *Client) GetClientID() string {
+	return p._ClientID
 }
 
-// SetAccessToken - Set the new consumer Key
-func (p *Client) SetAccessToken(newToken string) {
-	p._accessToken = newToken
-}
+// Authorise -  perform a Box Server to Server Authorisation
+func (p *Client) Authorise(url string, clientID string, uri string) error {
 
-// GetAccessToken - Set the new consumer Key
-func (p *Client) GetAccessToken() string {
-	return p._accessToken
-}
+	/*mySigningKey := []byte("AllYourBase")
 
-// Authenticate takes the the users consumer key and performs a one time authentication with
-// the Pocket API to request access. A Request Token is returned that should be used for all
-// subsequent requests to Pocket.
-func (p *Client) Authenticate(consumerKey string, resp *AuthenticationResponse) error {
-
-	request := map[string]string{"consumer_key": consumerKey, "redirect_uri": RedirectURI}
-	jsonStr, _ := json.Marshal(request)
-	err := postJSON("POST", AuthenticationURL, jsonStr, resp)
-
-	return err
-}
-
-// UserAuthorise -  Redirect the user to the Pocket Authorise screen
-func (p *Client) UserAuthorise(url string, reqtoken string, uri string) error {
-
-	browser := exec.Command("open", url+
-		"request_token="+reqtoken+
-		"&redirect_uri="+uri)
-
-	_, err := browser.Output()
-
-	return err
-}
-
-// RetrieveAccessToken -  Using the consumerKey and request code, obtain an Access token and Pocket Username
-func (p *Client) RetrieveAccessToken(consumerKey string, code string, resp *AuthorisationResponse) error {
-
-	request := map[string]string{"consumer_key": consumerKey, "code": code}
-	jsonStr, _ := json.Marshal(request)
-	err := postJSON("POST", AuthorisationURL, jsonStr, resp)
-
-	return err
-}
-
-// Retrieve -  Pull back items from Pocket
-func (p *Client) Retrieve(itemreq RetrieveRequest, resp *RetrieveResponse) error {
-
-	jsonStr, err := json.Marshal(itemreq)
-
-	err = postJSON("GET", RetrieveURL, jsonStr, resp)
-
-	return err
-}
-
-// Modify -  Modify items in Pocket
-func (p *Client) Modify(req ModifyRequest, resp *ModifyResponse) error {
-
-	jsonStr, err := json.Marshal(req)
-
-	if err != nil {
-		return err
+	// Create the Claims
+	claims := &jwt.StandardClaims{
+		ExpiresAt: 15000,
+		Issuer:    "test",
 	}
 
-	err = postJSON("POST", ModifyURL, jsonStr, resp)
-
-	return err
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	ss, err := token.SignedString(mySigningKey)
+	fmt.Printf("%v %v", ss, err)
+	*/
+	return nil
 }
 
 // Generic post method, url and data are incoming. Response is a  base interface

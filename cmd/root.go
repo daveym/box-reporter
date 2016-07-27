@@ -12,7 +12,7 @@ import (
 var RootCmd = &cobra.Command{
 	Use:   "box-reporter",
 	Short: "Extract Events from Box",
-	Long:  `Extract events from Box`,
+	Long:  `Extract Events from Box`,
 }
 
 // Execute - Adds all defined commands
@@ -22,7 +22,7 @@ func Execute() {
 		os.Exit(-1)
 	}
 
-	viper.Get("consumerkey")
+	viper.Get("ClientID")
 }
 
 func init() {
