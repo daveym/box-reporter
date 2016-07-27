@@ -20,7 +20,7 @@ type Client struct {
 	_accessToken string
 }
 
-// SetClientID - Set the new consumer Key
+// SetClientID - SSet the ClientID
 func (p *Client) SetClientID(newKey string) {
 	p._ClientID = newKey
 }
@@ -45,7 +45,9 @@ func (p *Client) Authorise(url string, clientID string, uri string) error {
 	ss, err := token.SignedString(mySigningKey)
 	fmt.Printf("%v %v", ss, err)
 	*/
-	return nil
+	var err error
+
+	return err
 }
 
 // Generic post method, url and data are incoming. Response is a  base interface

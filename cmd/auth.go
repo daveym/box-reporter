@@ -1,13 +1,6 @@
 package cmd
 
-import (
-	"fmt"
-
-	"github.com/daveym/box-reporter/api"
-	"github.com/daveym/box-reporter/box"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-)
+import "github.com/spf13/cobra"
 
 var authCmd = &cobra.Command{
 	Use:   "auth",
@@ -16,17 +9,12 @@ var authCmd = &cobra.Command{
 	can be found under the development area within the Box website`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		pc := &box.Client{}
+		//pc := &box.Client{}
 
-		pc.SetClientID(viper.GetString("ClientID"))
-		pc.SetAccessToken(viper.GetString("AccessToken"))
+		//pc.SetClientID(viper.GetString("ClientID"))
+		//msg := api.Authenticate(pc)
 
-		msg := api.Authenticate(pc)
-
-		viper.Set("ClientID", pc.GetClientID())
-		viper.Set("AccessToken", pc.GetAccessToken())
-
-		fmt.Println(msg)
+		//fmt.Println(msg)
 
 	}}
 

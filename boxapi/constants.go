@@ -8,7 +8,6 @@ const CfgFile string = "box-reporter.yaml"
 
 // URLS
 const (
-
 	// AuthorisationURL - API address to Authorise and recieve an access Token
 	AuthorisationURL string = "https://account.box.com/api/oauth2/authorize"
 	//UserAuthorisationURL - Address that a user must enter into their browser to Authorise access to Box
