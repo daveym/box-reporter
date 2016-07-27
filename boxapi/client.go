@@ -33,18 +33,6 @@ func (p *Client) GetClientID() string {
 // Authorise -  perform a Box Server to Server Authorisation
 func (p *Client) Authorise(url string, clientID string, uri string) error {
 
-	/*mySigningKey := []byte("AllYourBase")
-
-	// Create the Claims
-	claims := &jwt.StandardClaims{
-		ExpiresAt: 15000,
-		Issuer:    "test",
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	ss, err := token.SignedString(mySigningKey)
-	fmt.Printf("%v %v", ss, err)
-	*/
 	var err error
 
 	return err

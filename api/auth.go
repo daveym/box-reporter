@@ -7,16 +7,5 @@ func Authenticate(bc box.API) string {
 
 	msg := ""
 
-	if len(bc.GetClientID()) == 0 {
-		msg = box.CLIENTIDNOTFOUNDEn
-		return msg
-	}
-
-	err := bc.Authorise(box.UserAuthorisationURL, bc.GetClientID(), box.RedirectURI)
-	if err != nil {
-		msg = box.ERRORAPPROVINGLINTEn
-		return msg
-	}
-
 	return msg
 }

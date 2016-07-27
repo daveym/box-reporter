@@ -9,13 +9,6 @@ var authCmd = &cobra.Command{
 	can be found under the development area within the Box website`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		//pc := &box.Client{}
-
-		//pc.SetClientID(viper.GetString("ClientID"))
-		//msg := api.Authenticate(pc)
-
-		//fmt.Println(msg)
-
 	}}
 
 func init() {
