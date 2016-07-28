@@ -4,7 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"time"
+
+	jwt "github.com/dgrijalva/jwt-go"
 )
 
 // API - Base interface type for Box API. Allows us to mock/test.
@@ -32,8 +36,19 @@ func (p *Client) GetClientID() string {
 // Authorise -  perform a Box Server to Server Authorisation
 func (p *Client) Authorise(url string, clientID string, uri string) error {
 
+	var privateKey []byte
 	var err error
+	var tokenString string
 
+	privateKey, _ = ioutil.ReadFile("Location of your demo.rsa")
+
+	token := jwt.New(jwt.GetSigningMethod("RS256"))
+
+	token.Claims["ID"] = "This is my super fake ID"
+	token.Claims["exp"] = time.Now().Unix() + 36000
+	tokenString, _ = token.SignedString(privateKey)
+
+	println(tokenString)
 	return err
 }
 
