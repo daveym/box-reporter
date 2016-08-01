@@ -15,10 +15,7 @@ func (p *MockClient) GetClientID() string {
 	return p._ClientID
 }
 
-// Authorise - Mock instance
-func (p *MockClient) Authorise(url string, code string, uri string) error {
-
+func (p *MockClient) CreateJWTAssertion() error {
 	var err error
-
 	return err
 }

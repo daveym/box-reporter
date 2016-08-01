@@ -15,7 +15,7 @@ import (
 type API interface {
 	SetClientID(string)
 	GetClientID() string
-	Authorise(string, string, string) error
+	CreateJWTAssertion() error
 }
 
 // Client -
@@ -23,18 +23,18 @@ type Client struct {
 	_ClientID string
 }
 
-// SetClientID - SSet the ClientID
+// SetClientID - Set the ClientID
 func (p *Client) SetClientID(newKey string) {
 	p._ClientID = newKey
 }
 
-// GetClientID - Set the new consumer Key
+// GetClientID - Get the ClientID
 func (p *Client) GetClientID() string {
 	return p._ClientID
 }
 
-// Authorise -  perform a Box Server to Server Authorisation
-func (p *Client) Authorise(url string, clientID string, uri string) error {
+// CreateJWTAssertion - build up the JSON Web Token for oAuth
+func (p *Client) CreateJWTAssertion() error {
 
 	var privateKey []byte
 	var err error
@@ -43,6 +43,8 @@ func (p *Client) Authorise(url string, clientID string, uri string) error {
 	privateKey, _ = ioutil.ReadFile("Location of your demo.rsa")
 
 	token := jwt.New(jwt.GetSigningMethod("RS256"))
+
+	token.Header["kid"] = "Public Key ID"
 
 	token.Claims["ID"] = "This is my super fake ID"
 	token.Claims["exp"] = time.Now().Unix() + 36000
