@@ -2,20 +2,32 @@ package box
 
 // MockClient - Used for mocking
 type MockClient struct {
-	_ClientID string
+	_PublicKeyID string
+	_ClientID    string
 }
 
-// SetClientID - Set the ClientID
-func (p *MockClient) SetClientID(newKey string) {
-	p._ClientID = newKey
+// SetPublicKeyID - Set the Box Public Key ID
+func (p *MockClient) SetPublicKeyID(newKey string) {
+	p._PublicKeyID = newKey
 }
 
-// GetClientID - Get the ClientID
+// GetPublicKeyID - Get the Box Public Key ID
+func (p *MockClient) GetPublicKeyID() string {
+	return p._PublicKeyID
+}
+
+// SetClientKeyID - Set the Box ClientID
+func (p *MockClient) SetClientKeyID(newClientID string) {
+	p._ClientID = newClientID
+}
+
+// GetClientID - Get the Box ClientID
 func (p *MockClient) GetClientID() string {
 	return p._ClientID
 }
 
-func (p *MockClient) CreateJWTAssertion() error {
+// CreateJWTAssertion - build up the JSON Web Token for oAuth
+func (p *MockClient) CreateJWTAssertion(PublicKeyID string) error {
 	var err error
 	return err
 }

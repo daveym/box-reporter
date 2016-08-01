@@ -13,41 +13,67 @@ import (
 
 // API - Base interface type for Box API. Allows us to mock/test.
 type API interface {
+	SetPublicKeyID(string)
+	GetPublicKeyID() string
 	SetClientID(string)
 	GetClientID() string
-	CreateJWTAssertion() error
+	CreateJWTAssertion(string, string) error
 }
 
 // Client -
 type Client struct {
-	_ClientID string
+	_PublicKeyID string
+	_ClientID    string
 }
 
-// SetClientID - Set the ClientID
-func (p *Client) SetClientID(newKey string) {
-	p._ClientID = newKey
+// SetPublicKeyID - Set the Box Public Key ID
+func (p *Client) SetPublicKeyID(newKey string) {
+	p._PublicKeyID = newKey
 }
 
-// GetClientID - Get the ClientID
+// GetPublicKeyID - Get the Box Public Key ID
+func (p *Client) GetPublicKeyID() string {
+	return p._PublicKeyID
+}
+
+// SetClientKeyID - Set the Box ClientID
+func (p *Client) SetClientID(newClientID string) {
+	p._ClientID = newClientID
+}
+
+// GetClientID - Get the Box ClientID
 func (p *Client) GetClientID() string {
 	return p._ClientID
 }
 
 // CreateJWTAssertion - build up the JSON Web Token for oAuth
-func (p *Client) CreateJWTAssertion() error {
+func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string) error {
 
 	var privateKey []byte
 	var err error
 	var tokenString string
 
-	privateKey, _ = ioutil.ReadFile("Location of your demo.rsa")
+	privateKey, _ = ioutil.ReadFile("/keys/private_key.pem")
 
 	token := jwt.New(jwt.GetSigningMethod("RS256"))
 
-	token.Header["kid"] = "Public Key ID"
+	// Build JWT Header - https://docs.box.com/v2.0/docs/app-auth
+	token.Header["alg"] = "RS256"
+	token.Header["typ"] = "JWT"
+	token.Header["kid"] = PublicKeyID
 
-	token.Claims["ID"] = "This is my super fake ID"
+	// Build JWT Claims - https://docs.box.com/v2.0/docs/app-auth
+	token.Claims["iss"] = ClientID
+	token.Claims["sub"] = "This is my super fake ID"
+	token.Claims["box_sub_type"] = "This is my super fake ID"
+	token.Claims["aud"] = "This is my super fake ID"
+	token.Claims["jti"] = "This is my super fake ID"
+	token.Claims["exp"] = "This is my super fake ID"
+	token.Claims["iat"] = "This is my super fake ID"
+	token.Claims["nbf"] = "This is my super fake ID"
 	token.Claims["exp"] = time.Now().Unix() + 36000
+
+	// Sign the JWT
 	tokenString, _ = token.SignedString(privateKey)
 
 	println(tokenString)

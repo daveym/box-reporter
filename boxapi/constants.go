@@ -8,10 +8,6 @@ const CfgFile string = "box-reporter.yaml"
 
 // URLS
 const (
-	// AuthorisationURL - API address to Authorise and recieve an access Token
-	AuthorisationURL string = "https://account.box.com/api/oauth2/authorize"
-	//UserAuthorisationURL - Address that a user must enter into their browser to Authorise access to Box
-	UserAuthorisationURL string = "https://account.box.com/api/oauth2/authorize?"
-	//RedirectURI - Link back location after Authorisation has been granted
-	RedirectURI string = "https://github.com/daveym/box-reporter/blob/master/AUTHCOMPLETE.md"
+	// JWTAuthenticationURL - URL for authenticating an oAuth 2.0 JWT. See https://docs.box.com/v2.0/docs/app-auth
+	JWTAuthenticationURL string = "https://api.box.com/oauth2/token"
 )

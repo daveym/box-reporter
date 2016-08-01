@@ -22,7 +22,7 @@ func Execute() {
 		os.Exit(-1)
 	}
 
-	viper.Get("ClientID")
+	viper.Get("PublicKeyID")
 }
 
 func init() {
