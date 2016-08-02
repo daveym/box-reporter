@@ -23,6 +23,7 @@ func Execute() {
 	}
 
 	viper.Get("PublicKeyID")
+	viper.Get("ClientID")
 }
 
 func init() {

@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os/exec"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -17,13 +19,16 @@ type API interface {
 	GetPublicKeyID() string
 	SetClientID(string)
 	GetClientID() string
-	CreateJWTAssertion(string, string) error
+	SetClaimSub(string)
+	GetClaimSub() string
+	CreateJWTAssertion(string, string, string) (string, error)
 }
 
 // Client -
 type Client struct {
 	_PublicKeyID string
 	_ClientID    string
+	_ClaimSub    string
 }
 
 // SetPublicKeyID - Set the Box Public Key ID
@@ -36,7 +41,7 @@ func (p *Client) GetPublicKeyID() string {
 	return p._PublicKeyID
 }
 
-// SetClientKeyID - Set the Box ClientID
+// SetClientID - Set the Box ClientID
 func (p *Client) SetClientID(newClientID string) {
 	p._ClientID = newClientID
 }
@@ -46,17 +51,38 @@ func (p *Client) GetClientID() string {
 	return p._ClientID
 }
 
-// CreateJWTAssertion - build up the JSON Web Token for oAuth
-func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string) error {
+// SetClaimSub - Set the Box ClientID
+func (p *Client) SetClaimSub(newClaimSub string) {
+	p._ClaimSub = newClaimSub
+}
 
-	var privateKey []byte
+// GetClaimSub - Get the ClaimSub ID
+func (p *Client) GetClaimSub() string {
+	return p._ClaimSub
+}
+
+// CreateJWTAssertion - build up the JSON Web Token for oAuth
+func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, ClaimSub string) (string, error) {
+
+	var signingKey []byte
 	var err error
+	var msg string
 	var tokenString string
 
-	privateKey, _ = ioutil.ReadFile("/keys/private_key.pem")
+	signingKey, err = ioutil.ReadFile("./keys/public_key.pem")
 
-	token := jwt.New(jwt.GetSigningMethod("RS256"))
+	// Generate JTI Value
+	jti, err := exec.Command("uuidgen").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	if err != nil {
+		msg = "Unable to read signing key. Please ensure your signing key is in the ./keys/ directory"
+		return msg, err
+	}
+
+	token := jwt.New(jwt.GetSigningMethod("RS384"))
 	// Build JWT Header - https://docs.box.com/v2.0/docs/app-auth
 	token.Header["alg"] = "RS256"
 	token.Header["typ"] = "JWT"
@@ -64,20 +90,24 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string) error {
 
 	// Build JWT Claims - https://docs.box.com/v2.0/docs/app-auth
 	token.Claims["iss"] = ClientID
-	token.Claims["sub"] = "This is my super fake ID"
-	token.Claims["box_sub_type"] = "This is my super fake ID"
-	token.Claims["aud"] = "This is my super fake ID"
-	token.Claims["jti"] = "This is my super fake ID"
-	token.Claims["exp"] = "This is my super fake ID"
-	token.Claims["iat"] = "This is my super fake ID"
-	token.Claims["nbf"] = "This is my super fake ID"
+	token.Claims["sub"] = ClaimSub
+	token.Claims["box_sub_type"] = "enterprise"
+	token.Claims["aud"] = JWTAUTHURL
+	token.Claims["jti"] = jti
 	token.Claims["exp"] = time.Now().Unix() + 36000
 
 	// Sign the JWT
-	tokenString, _ = token.SignedString(privateKey)
+	tokenString, err = token.SignedString(signingKey)
 
-	println(tokenString)
-	return err
+	fmt.Println(err.Error())
+
+	if err != nil {
+		msg = "Unable to sign token, please check that you have a signing key in ./keys/"
+		return msg, err
+	}
+
+	fmt.Println(tokenString)
+	return msg, err
 }
 
 // Generic post method, url and data are incoming. Response is a  base interface

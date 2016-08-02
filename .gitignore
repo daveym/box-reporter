@@ -23,6 +23,6 @@ _testmain.go
 *.test
 *.prof
 *.pem
-box-reporter.yaml
+*.yaml
 reporter
 *.idea

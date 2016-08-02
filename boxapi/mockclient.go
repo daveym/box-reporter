@@ -4,6 +4,7 @@ package box
 type MockClient struct {
 	_PublicKeyID string
 	_ClientID    string
+	_ClaimSub    string
 }
 
 // SetPublicKeyID - Set the Box Public Key ID
@@ -30,4 +31,14 @@ func (p *MockClient) GetClientID() string {
 func (p *MockClient) CreateJWTAssertion(PublicKeyID string) error {
 	var err error
 	return err
+}
+
+// SetClaimSub - Set the Box ClientID
+func (p *MockClient) SetClaimSub(newClaimSub string) {
+	p._ClaimSub = newClaimSub
+}
+
+// GetClaimSub - Get the ClaimSub ID
+func (p *MockClient) GetClaimSub() string {
+	return p._ClaimSub
 }

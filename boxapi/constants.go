@@ -9,5 +9,5 @@ const CfgFile string = "box-reporter.yaml"
 // URLS
 const (
 	// JWTAuthenticationURL - URL for authenticating an oAuth 2.0 JWT. See https://docs.box.com/v2.0/docs/app-auth
-	JWTAuthenticationURL string = "https://api.box.com/oauth2/token"
+	JWTAUTHURL string = "https://api.box.com/oauth2/token"
 )
