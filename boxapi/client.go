@@ -69,7 +69,7 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, ClaimSu
 	var msg string
 	var tokenString string
 
-	signingKey, err = ioutil.ReadFile("./keys/public_key.pem")
+	signingKey, err = ioutil.ReadFile("./keys/private_key.pem")
 
 	// Generate JTI Value
 	jti, err := exec.Command("uuidgen").Output()
@@ -78,11 +78,11 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, ClaimSu
 	}
 
 	if err != nil {
-		msg = "Unable to read signing key. Please ensure your signing key is in the ./keys/ directory"
+		msg = "Unable to read signing key. Please ensure your signing key 'private_key.pem' is in the ./keys/ directory"
 		return msg, err
 	}
 
-	token := jwt.New(jwt.GetSigningMethod("RS384"))
+	token := jwt.New(jwt.GetSigningMethod("RS256"))
 	// Build JWT Header - https://docs.box.com/v2.0/docs/app-auth
 	token.Header["alg"] = "RS256"
 	token.Header["typ"] = "JWT"
@@ -99,14 +99,14 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, ClaimSu
 	// Sign the JWT
 	tokenString, err = token.SignedString(signingKey)
 
-	fmt.Println(err.Error())
+	fmt.Println(err)
+	fmt.Println(tokenString)
 
 	if err != nil {
 		msg = "Unable to sign token, please check that you have a signing key in ./keys/"
 		return msg, err
 	}
 
-	fmt.Println(tokenString)
 	return msg, err
 }
 
