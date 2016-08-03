@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os/exec"
 	"time"
@@ -69,12 +68,13 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, ClaimSu
 	var msg string
 	var tokenString string
 
-	signingKey, err = ioutil.ReadFile("./keys/private_key.pem")
+	signingKey, err = ioutil.ReadFile("./keys/sample_key")
 
 	// Generate JTI Value
 	jti, err := exec.Command("uuidgen").Output()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err.Error())
+		return msg, err
 	}
 
 	if err != nil {
@@ -99,7 +99,6 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, ClaimSu
 	// Sign the JWT
 	tokenString, err = token.SignedString(signingKey)
 
-	fmt.Println(err)
 	fmt.Println(tokenString)
 
 	if err != nil {
