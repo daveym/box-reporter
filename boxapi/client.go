@@ -61,14 +61,14 @@ func (p *Client) GetClaimSub() string {
 }
 
 // CreateJWTAssertion - build up the JSON Web Token for oAuth
-func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, ClaimSub string) (string, error) {
+func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, Sub string) (string, error) {
 
 	var signingKey []byte
 	var err error
 	var msg string
 	var tokenString string
 
-	signingKey, err = ioutil.ReadFile("./keys/sample_key")
+	signingKey, err = ioutil.ReadFile("./keys/private_key.pem")
 
 	// Generate JTI Value
 	jti, err := exec.Command("uuidgen").Output()
@@ -78,11 +78,17 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, ClaimSu
 	}
 
 	if err != nil {
-		msg = "Unable to read signing key. Please ensure your signing key 'private_key.pem' is in the ./keys/ directory"
+		msg = "Unable to read signing key. Please ensure your private signing key is in the ./keys/ directory"
 		return msg, err
 	}
 
+	/* Keys generated using the following. Note, use a recent version of OpenSSL!
+	./openssl genpkey -algorithm RSA -out private_key.pem -pkeyopt rsa_keygen_bits:2048
+	./openssl rsa -pubout -in private_key.pem -out public_key.pem
+	*/
+
 	token := jwt.New(jwt.GetSigningMethod("RS256"))
+
 	// Build JWT Header - https://docs.box.com/v2.0/docs/app-auth
 	token.Header["alg"] = "RS256"
 	token.Header["typ"] = "JWT"
@@ -90,7 +96,7 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, ClaimSu
 
 	// Build JWT Claims - https://docs.box.com/v2.0/docs/app-auth
 	token.Claims["iss"] = ClientID
-	token.Claims["sub"] = ClaimSub
+	token.Claims["sub"] = Sub
 	token.Claims["box_sub_type"] = "enterprise"
 	token.Claims["aud"] = JWTAUTHURL
 	token.Claims["jti"] = jti
@@ -99,14 +105,12 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, ClaimSu
 	// Sign the JWT
 	tokenString, err = token.SignedString(signingKey)
 
-	fmt.Println(tokenString)
-
 	if err != nil {
 		msg = "Unable to sign token, please check that you have a signing key in ./keys/"
 		return msg, err
 	}
 
-	return msg, err
+	return tokenString, err
 }
 
 // Generic post method, url and data are incoming. Response is a  base interface
