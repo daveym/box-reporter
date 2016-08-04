@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os/exec"
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -21,6 +23,7 @@ type API interface {
 	SetClaimSub(string)
 	GetClaimSub() string
 	CreateJWTAssertion(string, string, string) (string, error)
+	SendOAuthRequest(string) (string, error)
 }
 
 // Client -
@@ -65,8 +68,7 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, Sub str
 
 	var signingKey []byte
 	var err error
-	var msg string
-	var tokenString string
+	var msg, tokenString string
 
 	signingKey, err = ioutil.ReadFile("./keys/private_key.pem")
 
@@ -86,7 +88,6 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, Sub str
 	./openssl genpkey -algorithm RSA -out private_key.pem -pkeyopt rsa_keygen_bits:2048
 	./openssl rsa -pubout -in private_key.pem -out public_key.pem
 	*/
-
 	token := jwt.New(jwt.GetSigningMethod("RS256"))
 
 	// Build JWT Header - https://docs.box.com/v2.0/docs/app-auth
@@ -111,6 +112,41 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, Sub str
 	}
 
 	return tokenString, err
+}
+
+// SendOAuthRequest - Sends a POST to authenticate against Box using JWT Assertion
+func SendOAuthRequest(JWToken string, ClientID string, ClientSecret string) (string, error) {
+
+	var err error
+	var msg string
+
+	hc := http.Client{}
+	form := url.Values{}
+
+	// Build form to POST
+	form.Add("grant_type", JWTGRANTTYPE)
+	form.Add("client_id", ClientID)
+	form.Add("ClientID", ClientSecret)
+	form.Add("assertion", JWToken)
+
+	req, err := http.NewRequest("POST", JWTAUTHURL, strings.NewReader(form.Encode()))
+
+	req.PostForm = form
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := hc.Do(req)
+
+	fmt.Println(resp.Status)
+
+	/*if err != nil {
+		msg = "Unable to make oAUTH2 post to authenticate agaist BOX"
+		return , err
+	}
+
+	err = json.NewDecoder(oAuthResponse).Decode(resp)
+	*/
+	return msg, err
+
 }
 
 // Generic post method, url and data are incoming. Response is a  base interface

@@ -19,7 +19,7 @@ var authCmd = &cobra.Command{
 		bc := &box.Client{}
 		bc.SetPublicKeyID(viper.GetString("PublicKeyID"))
 		bc.SetClientID(viper.GetString("ClientID"))
-		bc.SetClaimSub(viper.GetString("ClaimSub"))
+		bc.SetClaimSub(viper.GetString("Sub"))
 
 		msg := api.Authenticate(bc)
 
