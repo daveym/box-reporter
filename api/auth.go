@@ -14,7 +14,7 @@ func Authenticate(bc box.API) string {
 		return msg
 	}
 
-	msg, err = bc.SendOAuthRequest()
+	msg, err = bc.SendOAuthRequest(bc.GetClientID(), "2vnt7KVZeVnJCQGoRuuPHOVBD370vGUj", JWToken)
 
 	return msg
 }

@@ -23,7 +23,7 @@ type API interface {
 	SetClaimSub(string)
 	GetClaimSub() string
 	CreateJWTAssertion(string, string, string) (string, error)
-	SendOAuthRequest(string) (string, error)
+	SendOAuthRequest(string, string, string) (string, error)
 }
 
 // Client -
@@ -115,7 +115,7 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, Sub str
 }
 
 // SendOAuthRequest - Sends a POST to authenticate against Box using JWT Assertion
-func SendOAuthRequest(JWToken string, ClientID string, ClientSecret string) (string, error) {
+func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken string) (string, error) {
 
 	var err error
 	var msg string
@@ -138,13 +138,6 @@ func SendOAuthRequest(JWToken string, ClientID string, ClientSecret string) (str
 
 	fmt.Println(resp.Status)
 
-	/*if err != nil {
-		msg = "Unable to make oAUTH2 post to authenticate agaist BOX"
-		return , err
-	}
-
-	err = json.NewDecoder(oAuthResponse).Decode(resp)
-	*/
 	return msg, err
 
 }
