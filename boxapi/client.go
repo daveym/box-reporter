@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os/exec"
 	"strings"
@@ -134,8 +136,11 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 	req.PostForm = form
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
+	debug(httputil.DumpRequestOut(req, true))
+
 	resp, err := hc.Do(req)
 
+	debug(httputil.DumpResponse(resp, true))
 	fmt.Println(resp.Status)
 
 	return msg, err
@@ -161,4 +166,12 @@ func postJSON(action string, url string, data []byte, resp interface{}) (err err
 	err = json.NewDecoder(jsonResp.Body).Decode(resp)
 
 	return err
+}
+
+func debug(data []byte, err error) {
+	if err == nil {
+		fmt.Printf("%s\n\n", data)
+	} else {
+		log.Fatalf("%s\n\n", err)
+	}
 }
