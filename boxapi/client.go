@@ -167,9 +167,28 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 }
 
 // CreateAppUser - https://docs.box.com/v2.0/docs/app-users
-func (p *Client) CreateAppUser(Token string) (string, error) {
+func (p *Client) CreateAppUser(EnterpriseAccessToken string) (string, error) {
 	var err error
 	var msg string
+
+	hc := http.Client{}
+	form := url.Values{}
+
+	// Build form to POST
+	form.Add("is_platform_access_only", "true")
+	form.Add("name", APPUSERNAME)
+
+	req, err := http.NewRequest("POST", JWTUSERURL, strings.NewReader(form.Encode()))
+
+	req.PostForm = form
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Authorization", EnterpriseAccessToken)
+
+	debug(httputil.DumpRequestOut(req, true))
+
+	resp, err := hc.Do(req)
+
+	debug(httputil.DumpResponse(resp, true))
 
 	return msg, err
 }

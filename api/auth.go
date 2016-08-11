@@ -9,17 +9,23 @@ import (
 // Authenticate against box API. Interface used to allow mock to be passed in.
 func Authenticate(bc box.API) string {
 
-	var msg, JWToken, AccessToken string
+	var msg, JWToken string
+	var EnterpriseAccessToken, AppUserToken string
 	var err error
 
 	JWToken, err = bc.CreateJWTAssertion(bc.GetPublicKeyID(), bc.GetClientID(), bc.GetClaimSub())
-
 	if err != nil {
 		return msg
 	}
 
-	AccessToken, err = bc.SendOAuthRequest(bc.GetClientID(), bc.GetClientSecret(), JWToken)
+	EnterpriseAccessToken, err = bc.SendOAuthRequest(bc.GetClientID(), bc.GetClientSecret(), JWToken)
+	if err != nil {
+		return msg
+	}
 
-	fmt.Println(AccessToken)
+	AppUserToken, err = bc.CreateAppUser(EnterpriseAccessToken)
+
+	fmt.Println(AppUserToken)
+
 	return msg
 }

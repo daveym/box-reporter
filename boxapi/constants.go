@@ -1,14 +1,13 @@
 package box
 
-// BoxHome - Box base url
-const BoxHome string = "https://api.box.com"
+// APPUSERNAME - used to name the user when creating an App User
+const APPUSERNAME string = "box-reporter"
 
-// CfgFile - Name of viper config file. Lint will store its values in the working directory.
-const CfgFile string = "box-reporter.yaml"
+// JWTAUTHURL - URL for oAUTH for Box
+const JWTAUTHURL string = "https://api.box.com/oauth2/token"
 
-// URLS
-const (
-	// JWTAuthenticationURL - URL for authenticating an oAuth 2.0 JWT. See https://docs.box.com/v2.0/docs/app-auth
-	JWTAUTHURL   string = "https://api.box.com/oauth2/token"
-	JWTGRANTTYPE string = "urn:ietf:params:oauth:grant-type:jwt-bearer"
-)
+// JWTUSERURL - URL for creating an App User
+const JWTUSERURL string = "https://api.box.com/2.0/users"
+
+// JWTGRANTTYPE - mandatory parameter for box oAuth
+const JWTGRANTTYPE string = "urn:ietf:params:oauth:grant-type:jwt-bearer"
