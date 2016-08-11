@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os/exec"
 	"strings"
@@ -124,7 +123,7 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 	form := url.Values{}
 
 	// Build form to POST
-	form.Add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+	form.Add("grant_type", JWTGRANTTYPE)
 	form.Add("client_id", ClientID)
 	form.Add("client_secret", ClientSecret)
 	form.Add("assertion", JWToken)
@@ -134,22 +133,27 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 	req.PostForm = form
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	fmt.Println("-----REQUEST------")
-	debug(httputil.DumpRequestOut(req, true))
+	//debug(httputil.DumpRequestOut(req, true))
 
 	resp, err := hc.Do(req)
 
-	fmt.Println("-----RESPONSE------")
-	debug(httputil.DumpResponse(resp, true))
+	if resp.Status == "403 Forbidden" {
+		msg = "403 Forbidden returned from Box. Is an IP whitelist in effect?"
+		return msg, err
+	}
+
+	//debug(httputil.DumpResponse(resp, true))
 
 	return msg, err
 
 }
 
 func debug(data []byte, err error) {
+
 	if err == nil {
 		fmt.Printf("%s\n\n", data)
 	} else {
 		log.Fatalf("%s\n\n", err)
 	}
+
 }
