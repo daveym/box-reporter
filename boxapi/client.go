@@ -1,8 +1,6 @@
 package box
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -74,15 +72,15 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, Sub str
 
 	signingKey, err = ioutil.ReadFile("./keys/private_key.pem")
 
+	if err != nil {
+		msg = "Unable to read signing key. Please ensure your private signing key is in the ./keys/ directory"
+		return msg, err
+	}
+
 	// Generate JTI Value
 	jti, err := exec.Command("uuidgen").Output()
 	if err != nil {
 		fmt.Println(err.Error())
-		return msg, err
-	}
-
-	if err != nil {
-		msg = "Unable to read signing key. Please ensure your private signing key is in the ./keys/ directory"
 		return msg, err
 	}
 
@@ -103,7 +101,7 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, Sub str
 	token.Claims["box_sub_type"] = "enterprise"
 	token.Claims["aud"] = JWTAUTHURL
 	token.Claims["jti"] = jti
-	token.Claims["exp"] = time.Now().Unix() + 36000
+	token.Claims["exp"] = time.Now().Add(time.Second * 30).Unix()
 
 	// Sign the JWT
 	tokenString, err = token.SignedString(signingKey)
@@ -126,9 +124,9 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 	form := url.Values{}
 
 	// Build form to POST
-	form.Add("grant_type", JWTGRANTTYPE)
+	form.Add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
 	form.Add("client_id", ClientID)
-	form.Add("ClientID", ClientSecret)
+	form.Add("client_secret", ClientSecret)
 	form.Add("assertion", JWToken)
 
 	req, err := http.NewRequest("POST", JWTAUTHURL, strings.NewReader(form.Encode()))
@@ -136,36 +134,16 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 	req.PostForm = form
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
+	fmt.Println("-----REQUEST------")
 	debug(httputil.DumpRequestOut(req, true))
 
 	resp, err := hc.Do(req)
 
+	fmt.Println("-----RESPONSE------")
 	debug(httputil.DumpResponse(resp, true))
-	fmt.Println(resp.Status)
 
 	return msg, err
 
-}
-
-// Generic post method, url and data are incoming. Response is a  base interface
-// that we can use to return many response types.
-func postJSON(action string, url string, data []byte, resp interface{}) (err error) {
-
-	req, err := http.NewRequest(action, url, bytes.NewBuffer(data))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("charset", "UTF8")
-	req.Header.Set("X-Accept", "application/json")
-
-	client := &http.Client{}
-	jsonResp, err := client.Do(req)
-
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	err = json.NewDecoder(jsonResp.Body).Decode(resp)
-
-	return err
 }
 
 func debug(data []byte, err error) {
