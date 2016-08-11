@@ -1,6 +1,7 @@
 package box
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -133,6 +134,7 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 
 	var err error
 	var msg string
+	var decodedResponse *oAuthResponse
 
 	hc := http.Client{}
 	form := url.Values{}
@@ -152,18 +154,26 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 	req.PostForm = form
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	debug(httputil.DumpRequestOut(req, true))
-
 	resp, err := hc.Do(req)
 
-	debug(httputil.DumpResponse(resp, true))
+	if err != nil {
+		msg = "Error submitting request to Box API"
+		return msg, err
+	}
 
 	if resp.Status == "403 Forbidden" {
 		msg = "403 Forbidden returned from Box. Is an IP whitelist in effect?"
 		return msg, err
 	}
 
-	return msg, err
+	err = json.NewDecoder(resp.Body).Decode(&decodedResponse)
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	// We dont need anything else apart from the token
+	return decodedResponse.AccessToken, err
 }
 
 // CreateAppUser - https://docs.box.com/v2.0/docs/app-users
