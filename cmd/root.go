@@ -24,6 +24,7 @@ func Execute() {
 
 	viper.Get("PublicKeyID")
 	viper.Get("ClientID")
+	viper.Get("ClientSecret")
 }
 
 func init() {

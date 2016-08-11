@@ -1,11 +1,15 @@
 package api
 
-import "github.com/daveym/box-reporter-go/boxapi"
+import (
+	"fmt"
+
+	"github.com/daveym/box-reporter-go/boxapi"
+)
 
 // Authenticate against box API. Interface used to allow mock to be passed in.
 func Authenticate(bc box.API) string {
 
-	var msg, JWToken string
+	var msg, JWToken, AccessToken string
 	var err error
 
 	JWToken, err = bc.CreateJWTAssertion(bc.GetPublicKeyID(), bc.GetClientID(), bc.GetClaimSub())
@@ -14,7 +18,8 @@ func Authenticate(bc box.API) string {
 		return msg
 	}
 
-	msg, err = bc.SendOAuthRequest(bc.GetClientID(), "2vnt7KVZeVnJCQGoRuuPHOVBD370vGUj", JWToken)
+	AccessToken, err = bc.SendOAuthRequest(bc.GetClientID(), bc.GetClientSecret(), JWToken)
 
+	fmt.Println(AccessToken)
 	return msg
 }

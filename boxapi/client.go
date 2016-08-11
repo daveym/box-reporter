@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os/exec"
 	"strings"
@@ -21,15 +22,19 @@ type API interface {
 	GetClientID() string
 	SetClaimSub(string)
 	GetClaimSub() string
+	SetClientSecret(string)
+	GetClientSecret() string
 	CreateJWTAssertion(string, string, string) (string, error)
 	SendOAuthRequest(string, string, string) (string, error)
+	CreateAppUser(string) (string, error)
 }
 
 // Client -
 type Client struct {
-	_PublicKeyID string
-	_ClientID    string
-	_ClaimSub    string
+	_PublicKeyID  string
+	_ClientID     string
+	_ClaimSub     string
+	_ClientSecret string
 }
 
 // SetPublicKeyID - Set the Box Public Key ID
@@ -60,6 +65,16 @@ func (p *Client) SetClaimSub(newClaimSub string) {
 // GetClaimSub - Get the ClaimSub ID
 func (p *Client) GetClaimSub() string {
 	return p._ClaimSub
+}
+
+// SetClientSecret - Set the Box SetClientSecret
+func (p *Client) SetClientSecret(newClientSecret string) {
+	p._ClientSecret = newClientSecret
+}
+
+// GetClientSecret - Get the Box GetClientSecret
+func (p *Client) GetClientSecret() string {
+	return p._ClientSecret
 }
 
 // CreateJWTAssertion - build up the JSON Web Token for oAuth
@@ -128,24 +143,35 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 	form.Add("client_secret", ClientSecret)
 	form.Add("assertion", JWToken)
 
+	fmt.Println("Grant" + JWTGRANTTYPE)
+	fmt.Println("ClientID" + ClientID)
+	fmt.Println("Client" + ClientSecret)
+
 	req, err := http.NewRequest("POST", JWTAUTHURL, strings.NewReader(form.Encode()))
 
 	req.PostForm = form
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	//debug(httputil.DumpRequestOut(req, true))
+	debug(httputil.DumpRequestOut(req, true))
 
 	resp, err := hc.Do(req)
+
+	debug(httputil.DumpResponse(resp, true))
 
 	if resp.Status == "403 Forbidden" {
 		msg = "403 Forbidden returned from Box. Is an IP whitelist in effect?"
 		return msg, err
 	}
 
-	//debug(httputil.DumpResponse(resp, true))
+	return msg, err
+}
+
+// CreateAppUser - https://docs.box.com/v2.0/docs/app-users
+func (p *Client) CreateAppUser(Token string) (string, error) {
+	var err error
+	var msg string
 
 	return msg, err
-
 }
 
 func debug(data []byte, err error) {
