@@ -184,11 +184,15 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 // CreateAppUser - https://docs.box.com/v2.0/docs/app-users
 func (p *Client) CreateAppUser(EnterpriseAccessToken string) (string, error) {
 
-	var resp *AppUserResponse
+	var req AppUserRequest
+	var resp AppUserResponse
 
-	request := map[string]string{"name": "box-reporter", "is_platform_access_only": "true"}
-	jsonStr, _ := json.Marshal(request)
-	err := postJSON("POST", JWTUSERURL, jsonStr, &resp, EnterpriseAccessToken)
+	req.IsPlatformAccess = true
+	req.Name = "Box-Reporter"
+
+	jsonStr, _ := json.Marshal(req)
+
+	err := postJSON("POST", JWTUSERURL, jsonStr, resp, EnterpriseAccessToken)
 
 	return resp.Name, err
 }

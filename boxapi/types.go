@@ -8,22 +8,28 @@ type oAuthResponse struct {
 	TokenType    string   `json:"token_type"`
 }
 
-// AppUser holds decoded JSON response from Box for an AppUser
+// AppUserRequest holds  JSON request to create an AppUser
+type AppUserRequest struct {
+	IsPlatformAccess bool   `json:"is_platform_access_only,bool"`
+	Name             string `json:"name"`
+}
+
+// AppUserResponse holds decoded JSON response from Box for an AppUser
 type AppUserResponse struct {
-	Usertype      string `json:"type"`
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	Login         string `json:"login"`
-	CreatedAt     string `json:"created_at"`
-	ModifiedAt    string `json:"modified_at"`
-	Language      string `json:"language"`
-	Timezone      string `json:"timezone"`
-	SpaceAmount   string `json:"space_amount"`
-	SpaceUsed     string `json:"space_used"`
-	MaxUploadSize string `json:"max_upload_size"`
-	Status        string `json:"status"`
-	JobTitle      string `json:"job_title"`
-	Phone         string `json:"phone"`
-	Address       string `json:"address"`
-	AvatarURL     string `json:"avatar_url"`
+	Usertype      string  `json:"type"`
+	ID            string  `json:"id"`
+	Name          string  `json:"name"`
+	Login         string  `json:"login"`
+	CreatedAt     string  `json:"created_at"`
+	ModifiedAt    string  `json:"modified_at"`
+	Language      string  `json:"language"`
+	Timezone      string  `json:"timezone"`
+	SpaceAmount   float32 `json:"space_amount"`
+	SpaceUsed     float32 `json:"space_used"`
+	MaxUploadSize float32 `json:"max_upload_size"`
+	Status        string  `json:"status"`
+	JobTitle      string  `json:"job_title"`
+	Phone         string  `json:"phone"`
+	Address       string  `json:"address"`
+	AvatarURL     string  `json:"avatar_url"`
 }
