@@ -96,7 +96,7 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, Sub str
 	// Generate JTI Value
 	jti, err := exec.Command("uuidgen").Output()
 	if err != nil {
-		fmt.Println(err.Error())
+		msg = "Unable to generate JTI value"
 		return msg, err
 	}
 
@@ -146,20 +146,12 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 	form.Add("client_secret", ClientSecret)
 	form.Add("assertion", JWToken)
 
-	fmt.Println("Grant" + JWTGRANTTYPE)
-	fmt.Println("ClientID" + ClientID)
-	fmt.Println("Client" + ClientSecret)
-
 	req, err := http.NewRequest("POST", JWTAUTHURL, strings.NewReader(form.Encode()))
-
 	req.PostForm = form
+
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	debug(httputil.DumpRequestOut(req, true))
-
 	resp, err := hc.Do(req)
-
-	debug(httputil.DumpResponse(resp, true))
 
 	if err != nil {
 		msg = "Error submitting request to Box API"
@@ -174,11 +166,13 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 	err = json.NewDecoder(resp.Body).Decode(&decodedResponse)
 
 	if err != nil {
-		fmt.Println(err.Error())
+		msg = "Error decoding OAuthResponse"
+	} else {
+		// We only need the Access Token
+		msg = decodedResponse.AccessToken
 	}
 
-	// We dont need anything else apart from the token
-	return decodedResponse.AccessToken, err
+	return msg, err
 }
 
 // CreateAppUser - https://docs.box.com/v2.0/docs/app-users
