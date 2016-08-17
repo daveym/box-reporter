@@ -1,6 +1,7 @@
 package box
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -154,7 +155,11 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 	req.PostForm = form
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
+	debug(httputil.DumpRequestOut(req, true))
+
 	resp, err := hc.Do(req)
+
+	debug(httputil.DumpResponse(resp, true))
 
 	if err != nil {
 		msg = "Error submitting request to Box API"
@@ -178,29 +183,41 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 
 // CreateAppUser - https://docs.box.com/v2.0/docs/app-users
 func (p *Client) CreateAppUser(EnterpriseAccessToken string) (string, error) {
-	var err error
-	var msg string
 
-	hc := http.Client{}
-	form := url.Values{}
+	var resp *AppUserResponse
 
-	// Build form to POST
-	form.Add("is_platform_access_only", "true")
-	form.Add("name", APPUSERNAME)
+	request := map[string]string{"name": "box-reporter", "is_platform_access_only": "true"}
+	jsonStr, _ := json.Marshal(request)
+	err := postJSON("POST", JWTUSERURL, jsonStr, &resp, EnterpriseAccessToken)
 
-	req, err := http.NewRequest("POST", JWTUSERURL, strings.NewReader(form.Encode()))
+	return resp.Name, err
+}
 
-	req.PostForm = form
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", EnterpriseAccessToken)
+func postJSON(action string, url string, data []byte, resp interface{}, EnterpriseAccessToken string) (err error) {
+
+	req, err := http.NewRequest(action, url, bytes.NewBuffer(data))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+EnterpriseAccessToken)
+
+	client := &http.Client{}
 
 	debug(httputil.DumpRequestOut(req, true))
 
-	resp, err := hc.Do(req)
+	jsonResp, err := client.Do(req)
 
-	debug(httputil.DumpResponse(resp, true))
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
-	return msg, err
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(jsonResp.Body)
+	s := buf.String()
+
+	fmt.Println(s)
+
+	err = json.NewDecoder(jsonResp.Body).Decode(resp)
+
+	return err
 }
 
 func debug(data []byte, err error) {
