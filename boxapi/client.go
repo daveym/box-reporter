@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os/exec"
 	"strings"
@@ -26,12 +25,12 @@ type API interface {
 	GetClaimSub() string
 	SetClientSecret(string)
 	GetClientSecret() string
-	CreateJWTAssertion(string, string, string) (string, error)
+	CreateJWTAssertion(string, string, string, *AppUserResponse) (string, error)
 	SendOAuthRequest(string, string, string) (string, error)
-	CreateAppUser(string) (string, error)
+	CreateAppUser(string) (AppUserResponse, error)
 }
 
-// Client -
+// Client - holds main client details
 type Client struct {
 	_PublicKeyID  string
 	_ClientID     string
@@ -80,7 +79,7 @@ func (p *Client) GetClientSecret() string {
 }
 
 // CreateJWTAssertion - build up the JSON Web Token for oAuth
-func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, Sub string) (string, error) {
+func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, Sub string, user *AppUserResponse) (string, error) {
 
 	var signingKey []byte
 	var err error
@@ -105,19 +104,24 @@ func (p *Client) CreateJWTAssertion(PublicKeyID string, ClientID string, Sub str
 	./openssl rsa -pubout -in private_key.pem -out public_key.pem
 	*/
 	token := jwt.New(jwt.GetSigningMethod("RS256"))
-
-	// Build JWT Header - https://docs.box.com/v2.0/docs/app-auth
 	token.Header["alg"] = "RS256"
 	token.Header["typ"] = "JWT"
 	token.Header["kid"] = PublicKeyID
 
 	// Build JWT Claims - https://docs.box.com/v2.0/docs/app-auth
 	token.Claims["iss"] = ClientID
-	token.Claims["sub"] = Sub
-	token.Claims["box_sub_type"] = "enterprise"
 	token.Claims["aud"] = JWTAUTHURL
 	token.Claims["jti"] = jti
 	token.Claims["exp"] = time.Now().Add(time.Second * 30).Unix()
+
+	// Create the JWT either for the enterprise or for a specific user.
+	if user.ID != "" {
+		token.Claims["box_sub_type"] = "user"
+		token.Claims["sub"] = user.ID
+	} else {
+		token.Claims["box_sub_type"] = "enterprise"
+		token.Claims["sub"] = Sub
+	}
 
 	// Sign the JWT
 	tokenString, err = token.SignedString(signingKey)
@@ -176,22 +180,25 @@ func (p *Client) SendOAuthRequest(ClientID string, ClientSecret string, JWToken 
 }
 
 // CreateAppUser - https://docs.box.com/v2.0/docs/app-users
-func (p *Client) CreateAppUser(EnterpriseAccessToken string) (string, error) {
+func (p *Client) CreateAppUser(EnterpriseAccessToken string) (AppUserResponse, error) {
 
 	var req AppUserRequest
-	var resp AppUserResponse
+	var newUser AppUserResponse
 
 	req.IsPlatformAccess = true
 	req.Name = "Box-Reporter"
 
 	jsonStr, _ := json.Marshal(req)
 
-	err := postJSON("POST", JWTUSERURL, jsonStr, resp, EnterpriseAccessToken)
+	err := postJSON("POST", JWTUSERURL, jsonStr, newUser, EnterpriseAccessToken)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
-	return resp.Name, err
+	return newUser, err
 }
 
-func postJSON(action string, url string, data []byte, resp interface{}, EnterpriseAccessToken string) (err error) {
+func postJSON(action string, url string, data []byte, resp AppUserResponse, EnterpriseAccessToken string) (err error) {
 
 	req, err := http.NewRequest(action, url, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
@@ -199,21 +206,9 @@ func postJSON(action string, url string, data []byte, resp interface{}, Enterpri
 
 	client := &http.Client{}
 
-	debug(httputil.DumpRequestOut(req, true))
-
 	jsonResp, err := client.Do(req)
 
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(jsonResp.Body)
-	s := buf.String()
-
-	fmt.Println(s)
-
-	err = json.NewDecoder(jsonResp.Body).Decode(resp)
+	err = json.NewDecoder(jsonResp.Body).Decode(&resp)
 
 	return err
 }

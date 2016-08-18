@@ -14,7 +14,7 @@ type AppUserRequest struct {
 	Name             string `json:"name"`
 }
 
-// AppUserResponse holds decoded JSON response from Box for an AppUser
+// AppUser holds the newly created AppUser
 type AppUserResponse struct {
 	Usertype      string  `json:"type"`
 	ID            string  `json:"id"`
