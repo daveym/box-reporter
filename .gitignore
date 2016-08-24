@@ -25,4 +25,5 @@ _testmain.go
 *.pem
 *.yaml
 reporter
+debug
 *.idea
